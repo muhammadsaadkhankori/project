@@ -39,9 +39,10 @@ def extract_frames_from_video(video_path, num_frames=30):
 
 def load_videos_and_labels(dataset_dir):
     print("Loading dataset")
-    classes = ['violence', 'non-violence']
+    classes = ['violence', 'Non-violence']
     X = []
     y = []
+    class_counts = {class_name: 0 for class_name in classes}
 
     for class_name in classes:
         class_path = os.path.join(dataset_dir, class_name)
@@ -52,6 +53,11 @@ def load_videos_and_labels(dataset_dir):
             frames = extract_frames_from_video(video_path)
             X.append(frames)
             y.append(label)
+            class_counts[class_name] += 1
+
+    print(f"Number of videos in 'violence' class: {class_counts['violence']}")
+    print(f"Number of videos in 'Non-violence' class: {class_counts['Non-violence']}")
+    print(f"Total number of videos: {sum(class_counts.values())}")
 
     return np.array(X), np.array(y)
 
@@ -127,8 +133,8 @@ def main():
 
     input_shape = (30, 112, 112, 3)
     optimizer = Adam(learning_rate=0.0001)
-    batchSize = 32
-    epochs = 2
+    batchSize = 8
+    epochs = 50 
     validation_split = 0.2
 
     model = create_3d_cnn(input_shape)
@@ -138,11 +144,10 @@ def main():
     history = model.fit(train_features, train_labels,
                         epochs=epochs,
                         batch_size=batchSize,
-                        validation_split=validation_split
-                        )
+                        validation_split=validation_split)
 
     plot_history(history)
-    model.save("CNN_model.h5")
+    model.save("./CNN_model.h5")
     print("Model saved as 'CNN_model.h5'")
 
 if __name__ == "__main__":
